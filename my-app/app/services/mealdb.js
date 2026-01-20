@@ -24,7 +24,10 @@ export async function searchMealsByName(name) {
  */
 export async function getMealById(id) {
   try {
-    const response = await fetch(`${BASE_URL}/lookup.php?i=${id}`);
+    const response = await fetch(`${BASE_URL}/lookup.php?i=${id}`, { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error(`Lookup failed with status ${response.status}`);
+    }
     const data = await response.json();
     return data.meals ? data.meals[0] : null;
   } catch (error) {
@@ -91,6 +94,22 @@ export async function getMealsByArea(area) {
     return data.meals || [];
   } catch (error) {
     console.error('Error fetching meals by area:', error);
+    return [];
+  }
+}
+
+/**
+ * Filter meals by main ingredient
+ * @param {string} ingredient - The main ingredient name
+ * @returns {Promise<Array>} Array of meals
+ */
+export async function getMealsByIngredient(ingredient) {
+  try {
+    const response = await fetch(`${BASE_URL}/filter.php?i=${encodeURIComponent(ingredient)}`);
+    const data = await response.json();
+    return data.meals || [];
+  } catch (error) {
+    console.error('Error fetching meals by ingredient:', error);
     return [];
   }
 }

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import Search from './Search';
 
 export default function Navigation() {
   const [theme, setTheme] = useState("light");
@@ -24,11 +23,6 @@ export default function Navigation() {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     applyTheme(stored || (prefersDark ? "dark" : "light"));
   }, []);
-
-  const handleSearch = (searchTerm) => {
-    console.log('Searching for:', searchTerm);
-    // Add search logic here
-  };
 
   return (
     <nav
@@ -68,13 +62,6 @@ export default function Navigation() {
               style={{ height: 'auto', width: 'auto', maxHeight: '56px', maxWidth: '50vw', objectFit: 'contain' }}
             />
           </a>
-        </div>
-
-        {/* Search Bar */}
-        <div className="navbar-search" style={{
-          width: '100%'
-        }}>
-          <Search placeholder="Search recipes..." onSearch={handleSearch} />
         </div>
 
         <button

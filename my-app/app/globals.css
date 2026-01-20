@@ -1,48 +1,86 @@
 @import "tailwindcss";
 
+/* Hide scrollbar */
+html, body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overflow-y: scroll;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 :root {
   --font-playfair-display: var(--font-playfair-display);
   --font-comfortaa: var(--font-comfortaa);
 
-  /* Light Mode Colors */
-  --bg-main: #fdf4e3;
-  --bg-card: #ffffff;
-  --text-primary: #134868;
-  --text-secondary: #4a6a82;
-  --btn-primary: #ed3f27;
-  --btn-primary-hover: #d93722;
-  --state-success: #5aa469;
-  --state-warning: #feb21a;
-  --badge-bg: #fff1cc;
-  --badge-text: #a06a00;
+  /* Light Mode Colors - Orange to Red */
+  --bg-main: #fef5f0;
+  --bg-card: #fefbf8;
+  --text-primary: #7c2d12;
+  --text-secondary: #b45309;
+  --btn-primary: #ea580c;
+  --btn-primary-hover: #c2410c;
+  --state-success: #59a842;
+  --state-warning: #ff6b35;
+  --badge-bg: #fed7aa;
+  --badge-text: #7c2d12;
 }
 
 :root[data-theme="light"] {
-  --bg-main: #fdf4e3;
-  --bg-card: #ffffff;
-  --text-primary: #134868;
-  --text-secondary: #4a6a82;
-  --btn-primary: #ed3f27;
-  --btn-primary-hover: #d93722;
-  --state-success: #5aa469;
-  --state-warning: #feb21a;
-  --badge-bg: #fff1cc;
-  --badge-text: #a06a00;
+  --bg-main: #fef5f0;
+  --bg-card: #fefbf8;
+  --text-primary: #7c2d12;
+  --text-secondary: #b45309;
+  --btn-primary: #ea580c;
+  --btn-primary-hover: #c2410c;
+  --state-success: #59a842;
+  --state-warning: #ff6b35;
+  --badge-bg: #fed7aa;
+  --badge-text: #7c2d12;
+  /* Sticky Note Colors */
+  --sticky-bg: #fed7aa;
+  --sticky-image-bg: #fdba74;
+  --sticky-category-bg: #fb923c;
+  --sticky-category-text: #7c2d12;
+  --sticky-area-bg: #ea580c;
+  --sticky-area-text: #ffffff;
+  --sticky-tag-bg: #fee2c3;
+  --sticky-tag-text: #7c2d12;
+  --sticky-title-text: #7c2d12;
+  --sticky-button-bg: #ea580c;
+  --sticky-button-hover: #c2410c;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     /* Dark Mode Colors */
     --bg-main: #0f2f44;
     --bg-card: #163e57;
     --text-primary: #fdf4e3;
     --text-secondary: #c9d6df;
-    --btn-primary: #ed3f27;
-    --btn-primary-hover: #ff5b43;
+    --btn-primary: #eab308;
+    --btn-primary-hover: #fbbf24;
     --state-success: #6fcf97;
     --state-warning: #feb21a;
     --badge-bg: #3a6f8f;
     --badge-text: #fdf4e3;
+    /* Sticky Note Colors - Yellow Palette */
+    --sticky-bg: #fef3c7;
+    --sticky-image-bg: #fde68a;
+    --sticky-category-bg: #fbbf24;
+    --sticky-category-text: #78350f;
+    --sticky-area-bg: #f59e0b;
+    --sticky-area-text: #ffffff;
+    --sticky-tag-bg: #fed7aa;
+    --sticky-tag-text: #92400e;
+    --sticky-title-text: #78350f;
+    --sticky-button-bg: #f59e0b;
+    --sticky-button-hover: #d97706;
   }
 }
 
@@ -51,12 +89,24 @@
   --bg-card: #163e57;
   --text-primary: #fdf4e3;
   --text-secondary: #c9d6df;
-  --btn-primary: #ed3f27;
-  --btn-primary-hover: #ff5b43;
+  --btn-primary: #eab308;
+  --btn-primary-hover: #fbbf24;
   --state-success: #6fcf97;
   --state-warning: #feb21a;
   --badge-bg: #3a6f8f;
   --badge-text: #fdf4e3;
+  /* Sticky Note Colors - Yellow Palette */
+  --sticky-bg: #fef3c7;
+  --sticky-image-bg: #fde68a;
+  --sticky-category-bg: #fbbf24;
+  --sticky-category-text: #78350f;
+  --sticky-area-bg: #f59e0b;
+  --sticky-area-text: #ffffff;
+  --sticky-tag-bg: #fed7aa;
+  --sticky-tag-text: #92400e;
+  --sticky-title-text: #78350f;
+  --sticky-button-bg: #f59e0b;
+  --sticky-button-hover: #d97706;
 }
 
 body {
@@ -125,11 +175,34 @@ small {
 .container {
   width: 100%;
   height: 100%;
-  --color: #E1E1E1;
   background-color: var(--bg-card);
-  background-image: linear-gradient(0deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%,transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%,transparent),
-      linear-gradient(90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%,transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%,transparent);
-  background-size: 55px 55px;
+  background-image: linear-gradient(#ffffff 1.1rem, #ccc 1.2rem);
+  background-size: 100% 1.2rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .container {
+    background-color: var(--bg-card);
+    background-image: linear-gradient(#163e57 1.1rem, #0f2f44 1.2rem);
+    background-size: 100% 1.2rem;
+  }
+}
+
+:root[data-theme="dark"] .container {
+  background-color: var(--bg-card);
+  background-image: linear-gradient(#163e57 1.1rem, #0f2f44 1.2rem);
+  background-size: 100% 1.2rem;
+}
+
+:root[data-theme="light"] .container {
+  background-color: var(--bg-card);
+  background-image: linear-gradient(#ffffff 1.1rem, #e5e7eb 1.2rem);
+  background-size: 100% 1.2rem;
+}
+
+:root[data-theme="dark"] .container {
+  background-image: linear-gradient(#ffffff 1.1rem, #ccc 1.2rem);
+  background-size: 100% 1.2rem;
 }
 
 /* The switch - the box around the slider */
@@ -233,7 +306,7 @@ small {
   color: var(--btn-primary);
 }
 
-@media (min-width: 1100px) {
+@media (min-width: 1024px) {
   .navbar-inner {
     flex-direction: row;
     align-items: center;
@@ -262,4 +335,49 @@ small {
   .navbar-toggle {
     display: none;
   }
+}
+/* Loader Spinner */
+@keyframes bounce-1 {
+  50% {
+    transform: translateY(-18px);
+  }
+}
+
+@keyframes bounce-2 {
+  50% {
+    transform: translateY(-18px);
+  }
+}
+
+@keyframes bounce-3 {
+  50% {
+    transform: translateY(-18px);
+  }
+}
+
+.loader {
+  width: 60px;
+  display: flex;
+  justify-content: space-evenly;
+  margin: 0 auto;
+}
+
+.ball {
+  list-style: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--btn-primary);
+}
+
+.ball:nth-child(1) {
+  animation: bounce-1 2.1s ease-in-out infinite;
+}
+
+.ball:nth-child(2) {
+  animation: bounce-2 2.1s ease-in-out 0.3s infinite;
+}
+
+.ball:nth-child(3) {
+  animation: bounce-3 2.1s ease-in-out 0.6s infinite;
 }

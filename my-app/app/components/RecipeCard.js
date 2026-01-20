@@ -1,26 +1,99 @@
 "use client";
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import Loader from './Loader';
+import { useEffect, useState } from 'react';
 
 export default function RecipeCard({ meal }) {
+  const router = useRouter();
   if (!meal) return null;
+
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    // Check if dark mode is active
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark' || 
+                   (window.matchMedia('(prefers-color-scheme: dark)').matches && 
+                    html.getAttribute('data-theme') !== 'light');
+    setIsDarkMode(isDark);
+
+    // Listen for theme changes
+    const observer = new MutationObserver(() => {
+      const isDark = html.getAttribute('data-theme') === 'dark' || 
+                     (window.matchMedia('(prefers-color-scheme: dark)').matches && 
+                      html.getAttribute('data-theme') !== 'light');
+      setIsDarkMode(isDark);
+    });
+
+    observer.observe(html, { attributes: true, attributeFilter: ['data-theme'] });
+    
+    // Also listen to media query changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      const isDark = html.getAttribute('data-theme') === 'dark' || 
+                     (mediaQuery.matches && html.getAttribute('data-theme') !== 'light');
+      setIsDarkMode(isDark);
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    
+    return () => {
+      observer.disconnect();
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, []);
+
+  // Define colors based on theme
+  const colors = isDarkMode ? {
+    bg: '#fef3c7',
+    imageBg: '#fde68a',
+    categoryBg: '#fbbf24',
+    categoryText: '#78350f',
+    areaBg: '#f59e0b',
+    areaText: '#ffffff',
+    tagBg: '#fed7aa',
+    tagText: '#92400e',
+    titleText: '#78350f',
+    buttonBg: '#f59e0b',
+    buttonHover: '#d97706'
+  } : {
+    bg: '#fed7aa',
+    imageBg: '#fdba74',
+    categoryBg: '#fb923c',
+    categoryText: '#7c2d12',
+    areaBg: '#ea580c',
+    areaText: '#ffffff',
+    tagBg: '#fee2c3',
+    tagText: '#7c2d12',
+    titleText: '#7c2d12',
+    buttonBg: '#ea580c',
+    buttonHover: '#c2410c'
+  };
+
+  // Random slight rotation for sticky note effect
+  const rotation = Math.random() * 4 - 2; // -2 to +2 degrees
 
   return (
     <div style={{
-      backgroundColor: 'var(--bg-card)',
-      borderRadius: '12px',
-      overflow: 'hidden',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-      cursor: 'pointer'
+      backgroundColor: colors.bg,
+      borderRadius: '2px',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
+      cursor: 'pointer',
+      display: 'flex',
+      flexDirection: 'column',
+      transform: `rotate(${rotation}deg)`,
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+      position: 'relative',
+      border: '1px solid rgba(217, 119, 6, 0.1)'
     }}
     onMouseOver={(e) => {
-      e.currentTarget.style.transform = 'translateY(-4px)';
-      e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+      e.currentTarget.style.transform = 'rotate(0deg) translateY(-4px)';
+      e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.15), 0 6px 12px rgba(0,0,0,0.1)';
     }}
     onMouseOut={(e) => {
-      e.currentTarget.style.transform = 'translateY(0)';
-      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+      e.currentTarget.style.transform = `rotate(${rotation}deg)`;
+      e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)';
     }}
     >
       {/* Recipe Image */}
@@ -28,8 +101,11 @@ export default function RecipeCard({ meal }) {
         position: 'relative',
         width: '100%',
         height: '200px',
-        backgroundColor: 'var(--text-secondary)',
-        overflow: 'hidden'
+        backgroundColor: colors.imageBg,
+        overflow: 'hidden',
+        borderBottom: '1px dashed rgba(217, 119, 6, 0.2)',
+        margin: '12px 12px 0 12px',
+        width: 'calc(100% - 24px)'
       }}>
         <img
           src={meal.strMealThumb}
@@ -37,77 +113,124 @@ export default function RecipeCard({ meal }) {
           style={{
             width: '100%',
             height: '100%',
-            objectFit: 'cover'
+            objectFit: 'cover',
+            opacity: '0.9'
           }}
         />
       </div>
 
       {/* Recipe Content */}
       <div style={{
-        padding: '1rem'
+        padding: '1rem 1.25rem 1.25rem',
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1
       }}>
-        {/* Category Badge */}
-        {meal.strCategory && (
-          <span style={{
-            display: 'inline-block',
-            backgroundColor: 'var(--badge-bg)',
-            color: 'var(--badge-text)',
-            padding: '4px 12px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            fontWeight: '600',
-            marginBottom: '0.75rem'
-          }}>
-            {meal.strCategory}
-          </span>
-        )}
+        {/* Multiple Tags */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '6px',
+          marginBottom: '0.75rem'
+        }}>
+          {/* Category Tag */}
+          {meal.strCategory && (
+            <span style={{
+              display: 'inline-block',
+              backgroundColor: colors.categoryBg,
+              color: colors.categoryText,
+              padding: '4px 10px',
+              borderRadius: '2px',
+              fontSize: '11px',
+              fontWeight: '700',
+              flexShrink: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+            }}>
+              {meal.strCategory}
+            </span>
+          )}
+          
+          {/* Area Tag */}
+          {meal.strArea && (
+            <span style={{
+              display: 'inline-block',
+              backgroundColor: colors.areaBg,
+              color: colors.areaText,
+              padding: '4px 10px',
+              borderRadius: '2px',
+              fontSize: '11px',
+              fontWeight: '700',
+              flexShrink: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+            }}>
+              {meal.strArea}
+            </span>
+          )}
+          
+          {/* Additional Tags from API */}
+          {meal.strTags && meal.strTags.split(',').slice(0, 2).map((tag, index) => (
+            <span key={index} style={{
+              display: 'inline-block',
+              backgroundColor: colors.tagBg,
+              color: colors.tagText,
+              padding: '4px 10px',
+              borderRadius: '2px',
+              fontSize: '11px',
+              fontWeight: '700',
+              flexShrink: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+            }}>
+              {tag.trim()}
+            </span>
+          ))}
+        </div>
 
         {/* Recipe Title */}
         <h3 style={{
-          fontSize: '20px',
-          fontWeight: '600',
-          color: 'var(--text-primary)',
+          fontSize: '19px',
+          fontWeight: '700',
+          color: colors.titleText,
           marginBottom: '0.5rem',
           fontFamily: 'var(--font-playfair-display)',
-          lineHeight: '1.3'
+          lineHeight: '1.3',
+          textShadow: '0 1px 1px rgba(255,255,255,0.5)'
         }}>
           {meal.strMeal}
         </h3>
 
-        {/* Recipe Area */}
-        {meal.strArea && (
-          <p style={{
-            fontSize: '14px',
-            color: 'var(--text-secondary)',
-            marginBottom: '0.75rem',
-            fontFamily: 'var(--font-comfortaa)'
-          }}>
-            {meal.strArea} Cuisine
-          </p>
-        )}
-
         {/* View Recipe Button */}
-        <button style={{
-          width: '100%',
-          backgroundColor: 'transparent',
-          color: 'var(--btn-primary)',
-          padding: '8px 16px',
-          borderRadius: '6px',
-          border: '2px solid var(--btn-primary)',
-          fontSize: '14px',
-          fontWeight: '600',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          marginTop: '0.5rem'
-        }}
-        onMouseOver={(e) => {
-          e.target.style.backgroundColor = 'var(--btn-primary)';
-          e.target.style.color = '#ffffff';
-        }}
-        onMouseOut={(e) => {
-          e.target.style.backgroundColor = 'transparent';
-          e.target.style.color = 'var(--btn-primary)';
-        }}
+        <button
+          onClick={() => router.push(`/recipe/${meal.idMeal}`)}
+          style={{
+            width: '100%',
+            backgroundColor: colors.buttonBg,
+            color: '#ffffff',
+            padding: '10px 16px',
+            borderRadius: '2px',
+            border: 'none',
+            fontSize: '13px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            marginTop: 'auto',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }}
+          onMouseOver={(e) => {
+            e.target.style.backgroundColor = colors.buttonHover;
+            e.target.style.boxShadow = '0 4px 6px rgba(0,0,0,0.15)';
+          }}
+          onMouseOut={(e) => {
+            e.target.style.backgroundColor = colors.buttonBg;
+            e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+          }}
         >
           View Recipe
         </button>
