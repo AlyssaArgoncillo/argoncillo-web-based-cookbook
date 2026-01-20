@@ -58,7 +58,8 @@ https://argoncillo-web-based-cookbook.vercel.app/
 ## Author
 
 Alyssa Argoncillo  
-Web Development Student  
+2nd Year - CS Student
+Mapua Malayan Colleges Mindanao
 
 ---
 
