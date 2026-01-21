@@ -7,6 +7,7 @@ import ContentWrapper from '../components/ContentWrapper';
 import Loader from '../components/Loader';
 import Search from '../components/Search';
 import { getRandomMeal, getMealsByCategory, getMealsByArea, getMealsByIngredient, getMealById, searchMealsByName } from '../services/mealdb';
+import Footer from '../components/Footer';
 
 const ITEMS_PER_PAGE = 15;
 
@@ -323,6 +324,8 @@ export default function RecipesPage() {
           </div>
         )}
       </ContentWrapper>
+
+      <Footer />
     </div>
   );
 }

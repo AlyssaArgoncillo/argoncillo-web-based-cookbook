@@ -35,6 +35,10 @@ export default function Search({ placeholder = "Search recipes...", onSearch, on
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
+    // Apply search with current filters
+    if (onFilterChange) {
+      onFilterChange({ category, area, ingredient });
+    }
     if (onSearch) {
       onSearch(value);
     }
@@ -42,6 +46,10 @@ export default function Search({ placeholder = "Search recipes...", onSearch, on
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Apply search with current filters
+    if (onFilterChange) {
+      onFilterChange({ category, area, ingredient });
+    }
     if (onSearch) {
       onSearch(searchTerm);
     }

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Loader from './Loader';
 import { useEffect, useState } from 'react';
+import { IMAGE_SIZES } from '../constants/imageSizes';
 
 export default function RecipeCard({ meal }) {
   const router = useRouter();
@@ -75,7 +76,7 @@ export default function RecipeCard({ meal }) {
   const rotation = Math.random() * 4 - 2; // -2 to +2 degrees
 
   return (
-    <div style={{
+    <div className="animate-fade-in" style={{
       backgroundColor: colors.bg,
       borderRadius: '2px',
       boxShadow: '0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
@@ -100,7 +101,7 @@ export default function RecipeCard({ meal }) {
       <div style={{
         position: 'relative',
         width: '100%',
-        height: '200px',
+        height: `${IMAGE_SIZES.RECIPE_CARD.height}px`,
         backgroundColor: colors.imageBg,
         overflow: 'hidden',
         borderBottom: '1px dashed rgba(217, 119, 6, 0.2)',

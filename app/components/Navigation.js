@@ -44,12 +44,13 @@ export default function Navigation() {
       }}>
         {/* Logo/Brand */}
         <div className="navbar-brand" style={{
-          textAlign: 'center',
+          textAlign: 'left',
           padding: '0',
           minHeight: '56px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'flex-start',
+          flex: '0 0 auto'
         }}>
           <a href="/" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 0, margin: 0 }}>
             <Image
@@ -66,7 +67,7 @@ export default function Navigation() {
 
         <button
           type="button"
-          className="navbar-toggle"
+          className="navbar-toggle hover-scale"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen(!menuOpen)}

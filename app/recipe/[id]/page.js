@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Footer from '../../components/Footer';
 import Navigation from '../../components/Navigation';
 import ContentWrapper from '../../components/ContentWrapper';
 import Loader from '../../components/Loader';
 import { getMealById } from '../../services/mealdb';
+import { IMAGE_SIZES } from '../../constants/imageSizes';
 
 export default function RecipeDetailPage() {
   const { id } = useParams();
@@ -298,7 +300,7 @@ export default function RecipeDetailPage() {
               borderRadius: '8px',
               overflow: 'hidden',
               boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-              aspectRatio: '1'
+              aspectRatio: IMAGE_SIZES.RECIPE_DETAIL.aspectRatio
             }}>
               <img
                 src={meal.strMealThumb}
@@ -386,11 +388,35 @@ export default function RecipeDetailPage() {
           <div style={{
             color: isDarkMode ? '#92400e' : '#92400e',
             fontSize: '15px',
-            lineHeight: '1.8',
-            whiteSpace: 'pre-wrap',
-            wordWrap: 'break-word'
+            lineHeight: '1.8'
           }}>
-            {meal.strInstructions}
+            {(() => {
+              const instructions = meal.strInstructions;
+              // Split by newlines
+              const allLines = instructions.split('\n');
+              
+              // Filter out blank/whitespace lines and lines that only contain step labels
+              const contentLines = allLines.filter(line => {
+                const trimmedLine = line.trim();
+                // Remove existing step labels to check if there's actual content
+                const cleanedLine = trimmedLine.replace(/^(step\s*\d+[\.\):]?|\d+[\.\):])\s*/i, '').trim();
+                // Keep only lines with actual content after removing step labels
+                return cleanedLine.length > 0;
+              });
+              
+              return contentLines.map((line, index) => {
+                const trimmedLine = line.trim();
+                
+                // Remove existing step labels
+                const cleanedLine = trimmedLine.replace(/^(step\s*\d+[\.\):]?|\d+[\.\):])\s*/i, '');
+                
+                return (
+                  <p key={index} style={{ marginBottom: '16px', color: isDarkMode ? '#92400e' : '#92400e' }}>
+                    <strong>Step {index + 1}:</strong> {cleanedLine}
+                  </p>
+                );
+              });
+            })()}
           </div>
         </div>
 
@@ -445,6 +471,7 @@ export default function RecipeDetailPage() {
         )}
 
         </ContentWrapper>
+        <Footer />
       </div>
     </>
   );
