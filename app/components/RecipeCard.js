@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Loader from './Loader';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { IMAGE_SIZES } from '../constants/imageSizes';
 
 export default function RecipeCard({ meal }) {
@@ -73,10 +73,10 @@ export default function RecipeCard({ meal }) {
   };
 
   // Random slight rotation for sticky note effect
-  const rotation = Math.random() * 4 - 2; // -2 to +2 degrees
+  const rotation = useMemo(() => Math.random() * 4 - 2, []); // -2 to +2 degrees
 
   return (
-    <div className="animate-fade-in" style={{
+    <div style={{
       backgroundColor: colors.bg,
       borderRadius: '2px',
       boxShadow: '0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
@@ -86,7 +86,8 @@ export default function RecipeCard({ meal }) {
       transform: `rotate(${rotation}deg)`,
       transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       position: 'relative',
-      border: '1px solid rgba(217, 119, 6, 0.1)'
+      border: '1px solid rgba(217, 119, 6, 0.1)',
+      animation: 'fadeIn 0.6s ease-out forwards'
     }}
     onMouseOver={(e) => {
       e.currentTarget.style.transform = 'rotate(0deg) translateY(-4px)';

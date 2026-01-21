@@ -137,7 +137,8 @@ export default function Featured({ meals, loading, error }) {
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: '16px'
+            gap: '24px',
+            perspective: '1000px'
           }}>
             {loading ? (
               Array.from({ length: 3 }).map((_, index) => (
