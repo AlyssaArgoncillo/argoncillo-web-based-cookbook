@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import RecipeCard from './RecipeCard';
 import Loader from './Loader';
-import ContentWrapper from './ContentWrapper';
-import { IMAGE_SIZES } from '../constants/imageSizes';
 
 export default function Featured({ meals, loading, error }) {
   const [isDarkMode, setIsDarkMode] = useState(false);

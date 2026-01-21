@@ -1,6 +1,32 @@
 const BASE_URL = 'https://www.themealdb.com/api/json/v1/1';
 const FEATURED_EVEN_IDS = ['52772', '52774', '52776', '52778'];
 
+// Available categories in MealDB API
+export const MEAL_CATEGORIES = [
+  'Beef', 'Chicken', 'Dessert', 'Lamb', 'Miscellaneous', 
+  'Pasta', 'Pork', 'Seafood', 'Side', 'Starter', 
+  'Vegan', 'Vegetarian', 'Breakfast', 'Goat'
+];
+
+// Available areas/cuisines in MealDB API
+export const MEAL_AREAS = [
+  'American', 'British', 'Canadian', 'Chinese', 'Croatian', 
+  'Dutch', 'Egyptian', 'Filipino', 'French', 'Greek', 
+  'Indian', 'Irish', 'Italian', 'Jamaican', 'Japanese', 
+  'Kenyan', 'Malaysian', 'Mexican', 'Moroccan', 'Polish', 
+  'Portuguese', 'Russian', 'Spanish', 'Thai', 'Tunisian', 
+  'Turkish', 'Ukrainian', 'Vietnamese'
+];
+
+// Common ingredients for filtering
+export const MEAL_INGREDIENTS = [
+  'Chicken', 'Beef', 'Pork', 'Salmon', 'Tuna', 'Shrimp',
+  'Potatoes', 'Tomatoes', 'Onions', 'Garlic', 'Rice', 'Pasta',
+  'Eggs', 'Cheese', 'Milk', 'Butter', 'Olive Oil',
+  'Mushrooms', 'Carrots', 'Broccoli', 'Spinach', 'Lettuce',
+  'Flour', 'Sugar', 'Chocolate', 'Vanilla', 'Lemon'
+];
+
 /**
  * Search meals by name
  * @param {string} name - The meal name to search for
@@ -174,4 +200,51 @@ export async function getFeaturedEvenMeals() {
     console.error('Error fetching featured meals:', error);
     return [];
   }
+}
+
+/**
+ * Extract YouTube video ID from URL
+ * @param {string} url - YouTube URL
+ * @returns {string|null} YouTube video ID or null
+ */
+export function getYouTubeId(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Extract ingredients and measurements from meal object
+ * @param {Object} meal - Meal object from API
+ * @returns {Array} Array of ingredient objects with name and measure
+ */
+export function extractIngredients(meal) {
+  const ingredients = [];
+  for (let i = 1; i <= 20; i++) {
+    const ingredient = meal[`strIngredient${i}`];
+    const measure = meal[`strMeasure${i}`];
+    if (ingredient && ingredient.trim()) {
+      ingredients.push({
+        name: ingredient,
+        measure: measure || ''
+      });
+    }
+  }
+  return ingredients;
+}
+
+/**
+ * Check if a meal contains a specific ingredient
+ * @param {Object} meal - Meal object from API
+ * @param {string} ingredient - Ingredient name to search for
+ * @returns {boolean} True if meal contains the ingredient
+ */
+export function mealHasIngredient(meal, ingredient) {
+  for (let i = 1; i <= 20; i++) {
+    const ing = meal[`strIngredient${i}`];
+    if (ing && ing.trim() && ing.toLowerCase().includes(ingredient.toLowerCase())) {
+      return true;
+    }
+  }
+  return false;
 }

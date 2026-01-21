@@ -6,7 +6,7 @@ import RecipeCard from '../components/RecipeCard';
 import ContentWrapper from '../components/ContentWrapper';
 import Loader from '../components/Loader';
 import Search from '../components/Search';
-import { getRandomMeal, getMealsByCategory, getMealsByArea, getMealsByIngredient, getMealById, searchMealsByName } from '../services/mealdb';
+import { getRandomMeal, getMealsByCategory, getMealsByArea, getMealsByIngredient, getMealById, searchMealsByName, mealHasIngredient } from '../services/mealdb';
 import Footer from '../components/Footer';
 
 const ITEMS_PER_PAGE = 15;
@@ -28,6 +28,16 @@ export default function RecipesPage() {
       
       let allMeals = [];
       
+      // Helper function to fetch and get full details for meals
+      const fetchDetailedMeals = async (meals, limit = 50) => {
+        const detailedMeals = await Promise.allSettled(
+          meals.slice(0, limit).map(meal => getMealById(meal.idMeal))
+        );
+        return detailedMeals
+          .filter(result => result.status === 'fulfilled' && result.value)
+          .map(result => result.value);
+      };
+      
       // Fetch based on search term first
       if (search) {
         allMeals = await searchMealsByName(search);
@@ -35,35 +45,17 @@ export default function RecipesPage() {
       // If category is selected, filter by category
       else if (category) {
         const categoryMeals = await getMealsByCategory(category);
-        // Get full details for each meal using settled to avoid failing the batch
-        const detailedMeals = await Promise.allSettled(
-          categoryMeals.slice(0, 50).map(meal => getMealById(meal.idMeal))
-        );
-        allMeals = detailedMeals
-          .filter(result => result.status === 'fulfilled' && result.value)
-          .map(result => result.value);
+        allMeals = await fetchDetailedMeals(categoryMeals);
       }
       // If area is selected, filter by area
       else if (area) {
         const areaMeals = await getMealsByArea(area);
-        // Get full details for each meal using settled to avoid failing the batch
-        const detailedMeals = await Promise.allSettled(
-          areaMeals.slice(0, 50).map(meal => getMealById(meal.idMeal))
-        );
-        allMeals = detailedMeals
-          .filter(result => result.status === 'fulfilled' && result.value)
-          .map(result => result.value);
+        allMeals = await fetchDetailedMeals(areaMeals);
       }
       // If ingredient is selected, filter by ingredient
       else if (ingredient) {
         const ingredientMeals = await getMealsByIngredient(ingredient);
-        // Get full details for each meal using settled to avoid failing the batch
-        const detailedMeals = await Promise.allSettled(
-          ingredientMeals.slice(0, 50).map(meal => getMealById(meal.idMeal))
-        );
-        allMeals = detailedMeals
-          .filter(result => result.status === 'fulfilled' && result.value)
-          .map(result => result.value);
+        allMeals = await fetchDetailedMeals(ingredientMeals);
       }
       // Default: fetch random meals
       else {
@@ -101,18 +93,7 @@ export default function RecipesPage() {
           filters.push(meal => meal.strArea === area);
         }
         if (ingredient) {
-          // Check if ingredient appears in any of the ingredient fields
-          filters.push(meal => {
-            // Get all ingredients from the meal
-            const ingredientsList = [];
-            for (let i = 1; i <= 20; i++) {
-              const ing = meal[`strIngredient${i}`];
-              if (ing && ing.trim()) {
-                ingredientsList.push(ing.toLowerCase());
-              }
-            }
-            return ingredientsList.some(ing => ing.includes(ingredient.toLowerCase()));
-          });
+          filters.push(meal => mealHasIngredient(meal, ingredient));
         }
         
         // Apply all filters - meal must pass ALL filter conditions

@@ -6,7 +6,7 @@ import Footer from '../../components/Footer';
 import Navigation from '../../components/Navigation';
 import ContentWrapper from '../../components/ContentWrapper';
 import Loader from '../../components/Loader';
-import { getMealById } from '../../services/mealdb';
+import { getMealById, getYouTubeId, extractIngredients } from '../../services/mealdb';
 import { IMAGE_SIZES } from '../../constants/imageSizes';
 
 export default function RecipeDetailPage() {
@@ -130,25 +130,9 @@ export default function RecipeDetailPage() {
   };
 
   // Extract ingredients and measurements
-  const ingredients = [];
-  for (let i = 1; i <= 20; i++) {
-    const ingredient = meal[`strIngredient${i}`];
-    const measure = meal[`strMeasure${i}`];
-    if (ingredient && ingredient.trim()) {
-      ingredients.push({
-        name: ingredient,
-        measure: measure || ''
-      });
-    }
-  }
+  const ingredients = extractIngredients(meal);
 
   // Extract YouTube video ID if available
-  const getYouTubeId = (url) => {
-    if (!url) return null;
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-    return match ? match[1] : null;
-  };
-
   const youtubeId = getYouTubeId(meal.strYoutube);
 
   return (
@@ -284,7 +268,7 @@ export default function RecipeDetailPage() {
         {/* Main Content - Two Column Layout */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: '40px',
           marginBottom: '40px',
           alignItems: 'start'

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { MEAL_CATEGORIES, MEAL_AREAS, MEAL_INGREDIENTS } from '../services/mealdb';
 
 export default function Search({ placeholder = "Search recipes...", onSearch, onFilterChange }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -8,29 +9,6 @@ export default function Search({ placeholder = "Search recipes...", onSearch, on
   const [area, setArea] = useState('');
   const [ingredient, setIngredient] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-
-  const categories = [
-    'Beef', 'Chicken', 'Dessert', 'Lamb', 'Miscellaneous', 
-    'Pasta', 'Pork', 'Seafood', 'Side', 'Starter', 
-    'Vegan', 'Vegetarian', 'Breakfast', 'Goat'
-  ];
-
-  const areas = [
-    'American', 'British', 'Canadian', 'Chinese', 'Croatian', 
-    'Dutch', 'Egyptian', 'Filipino', 'French', 'Greek', 
-    'Indian', 'Irish', 'Italian', 'Jamaican', 'Japanese', 
-    'Kenyan', 'Malaysian', 'Mexican', 'Moroccan', 'Polish', 
-    'Portuguese', 'Russian', 'Spanish', 'Thai', 'Tunisian', 
-    'Turkish', 'Ukrainian', 'Vietnamese'
-  ];
-
-  const ingredients = [
-    'Chicken', 'Beef', 'Pork', 'Salmon', 'Tuna', 'Shrimp',
-    'Potatoes', 'Tomatoes', 'Onions', 'Garlic', 'Rice', 'Pasta',
-    'Eggs', 'Cheese', 'Milk', 'Butter', 'Olive Oil',
-    'Mushrooms', 'Carrots', 'Broccoli', 'Spinach', 'Lettuce',
-    'Flour', 'Sugar', 'Chocolate', 'Vanilla', 'Lemon'
-  ];
 
   const handleSearch = (e) => {
     const value = e.target.value;
@@ -257,7 +235,7 @@ export default function Search({ placeholder = "Search recipes...", onSearch, on
                 onBlur={(e) => e.target.style.borderColor = 'var(--text-secondary)'}
               >
                 <option value="">All Categories</option>
-                {categories.map((cat) => (
+                {MEAL_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
@@ -293,7 +271,7 @@ export default function Search({ placeholder = "Search recipes...", onSearch, on
                 onBlur={(e) => e.target.style.borderColor = 'var(--text-secondary)'}
               >
                 <option value="">All Cuisines</option>
-                {areas.map((a) => (
+                {MEAL_AREAS.map((a) => (
                   <option key={a} value={a}>{a}</option>
                 ))}
               </select>
@@ -329,7 +307,7 @@ export default function Search({ placeholder = "Search recipes...", onSearch, on
                 onBlur={(e) => e.target.style.borderColor = 'var(--text-secondary)'}
               >
                 <option value="">All Ingredients</option>
-                {ingredients.map((ing) => (
+                {MEAL_INGREDIENTS.map((ing) => (
                   <option key={ing} value={ing}>{ing}</option>
                 ))}
               </select>

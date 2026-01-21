@@ -1,8 +1,6 @@
 "use client";
 
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import Loader from './Loader';
 import { useEffect, useState, useMemo } from 'react';
 import { IMAGE_SIZES } from '../constants/imageSizes';
 
@@ -101,13 +99,12 @@ export default function RecipeCard({ meal }) {
       {/* Recipe Image */}
       <div style={{
         position: 'relative',
-        width: '100%',
+        width: 'calc(100% - 24px)',
         height: `${IMAGE_SIZES.RECIPE_CARD.height}px`,
         backgroundColor: colors.imageBg,
         overflow: 'hidden',
         borderBottom: '1px dashed rgba(217, 119, 6, 0.2)',
-        margin: '12px 12px 0 12px',
-        width: 'calc(100% - 24px)'
+        margin: '12px 12px 0 12px'
       }}>
         <img
           src={meal.strMealThumb}
