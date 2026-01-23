@@ -145,8 +145,55 @@ export default function RecipeDetailPage() {
           : 'linear-gradient(#ffffff 1.1rem, #e5e7eb 1.2rem)',
         backgroundSize: '100% 1.2rem',
         minHeight: '100vh',
-        transition: 'background-color 0.3s ease, background-image 0.3s ease'
+        transition: 'background-color 0.3s ease, background-image 0.3s ease',
+        position: 'relative'
       }}>
+        <style jsx>{`
+          @keyframes floatRotate {
+            0%, 100% {
+              transform: translateY(0px) rotate(-5deg);
+            }
+            50% {
+              transform: translateY(-15px) rotate(5deg);
+            }
+          }
+        `}</style>
+        {/* Coffee Doodle - Upper Right */}
+        <img
+          src={isDarkMode ? '/CoffeeDoddle_dark.svg' : '/CoffeeDoddle.svg'}
+          alt="Coffee decoration"
+          style={{
+            position: 'absolute',
+            top: '120px',
+            right: '20px',
+            width: '360px',
+            height: 'auto',
+            opacity: isDarkMode ? 0.3 : 0.4,
+            pointerEvents: 'none',
+            zIndex: 0,
+            animation: 'floatRotate 3s ease-in-out infinite'
+          }}
+        />
+        
+        {/* Ice Cream Doodle - Lower Left */}
+        <img
+          src={isDarkMode ? '/IceCreamDoodle_dark.svg' : '/IceCreamDoodle.svg'}
+          alt="Ice cream decoration"
+          style={{
+            position: 'absolute',
+            bottom: '520px',
+            left: '20px',
+            width: '360px',
+            height: 'auto',
+            opacity: isDarkMode ? 0.3 : 0.4,
+            pointerEvents: 'none',
+            zIndex: 0,
+            animation: 'floatRotate 3s ease-in-out infinite'
+          }}
+        />
+        
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
         <ContentWrapper maxWidth="1000px" padding="40px 20px" backgroundColor="transparent">
         {/* Back Button */}
         <button
@@ -376,23 +423,24 @@ export default function RecipeDetailPage() {
           }}>
             {(() => {
               const instructions = meal.strInstructions;
-              // Split by newlines
               const allLines = instructions.split('\n');
               
-              // Filter out blank/whitespace lines and lines that only contain step labels
               const contentLines = allLines.filter(line => {
                 const trimmedLine = line.trim();
-                // Remove existing step labels to check if there's actual content
-                const cleanedLine = trimmedLine.replace(/^(step\s*\d+[\.\):]?|\d+[\.\):])\s*/i, '').trim();
-                // Keep only lines with actual content after removing step labels
+                // Remove step labels to check if anything remains
+                const cleanedLine = trimmedLine
+                  .replace(/^step\s*\d*[\.\):\s]*/i, '')
+                  .replace(/^\d+[\.\):\s]*/, '')
+                  .trim();
                 return cleanedLine.length > 0;
               });
               
               return contentLines.map((line, index) => {
                 const trimmedLine = line.trim();
-                
-                // Remove existing step labels
-                const cleanedLine = trimmedLine.replace(/^(step\s*\d+[\.\):]?|\d+[\.\):])\s*/i, '');
+                const cleanedLine = trimmedLine
+                  .replace(/^step\s*\d*[\.\):\s]*/i, '')
+                  .replace(/^\d+[\.\):\s]*/, '')
+                  .trim();
                 
                 return (
                   <p key={index} style={{ marginBottom: '16px', color: isDarkMode ? '#92400e' : '#92400e' }}>
@@ -455,6 +503,8 @@ export default function RecipeDetailPage() {
         )}
 
         </ContentWrapper>
+        </div>
+        
         <Footer />
       </div>
     </>

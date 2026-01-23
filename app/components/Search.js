@@ -13,48 +13,43 @@ export default function Search({ placeholder = "Search recipes...", onSearch, on
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    // Apply search with current filters
-    if (onFilterChange) {
-      onFilterChange({ category, area, ingredient });
-    }
-    if (onSearch) {
-      onSearch(value);
+    // Don't auto-search, just update the input value
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit(e);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Apply search with current filters
-    if (onFilterChange) {
-      onFilterChange({ category, area, ingredient });
-    }
+    // Trigger search only when button clicked or Enter pressed
     if (onSearch) {
       onSearch(searchTerm);
+    }
+    if (onFilterChange) {
+      onFilterChange({ category, area, ingredient });
     }
   };
 
   const handleCategoryChange = (e) => {
     const value = e.target.value;
     setCategory(value);
-    if (onFilterChange) {
-      onFilterChange({ category: value, area, ingredient });
-    }
+    // Don't auto-apply filters, wait for manual trigger
   };
 
   const handleAreaChange = (e) => {
     const value = e.target.value;
     setArea(value);
-    if (onFilterChange) {
-      onFilterChange({ category, area: value, ingredient });
-    }
+    // Don't auto-apply filters, wait for manual trigger
   };
 
   const handleIngredientChange = (e) => {
     const value = e.target.value;
     setIngredient(value);
-    if (onFilterChange) {
-      onFilterChange({ category, area, ingredient: value });
-    }
+    // Don't auto-apply filters, wait for manual trigger
   };
 
   const clearFilters = () => {
@@ -63,8 +58,12 @@ export default function Search({ placeholder = "Search recipes...", onSearch, on
     setIngredient('');
     setSearchTerm('');
     setShowFilters(false);
+    // Trigger search/filter update when clearing
     if (onFilterChange) {
       onFilterChange({ category: '', area: '', ingredient: '' });
+    }
+    if (onSearch) {
+      onSearch('');
     }
   };
 
@@ -86,6 +85,7 @@ export default function Search({ placeholder = "Search recipes...", onSearch, on
             type="text"
             value={searchTerm}
             onChange={handleSearch}
+            onKeyPress={handleKeyPress}
             placeholder={placeholder}
             style={{
               width: '100%',

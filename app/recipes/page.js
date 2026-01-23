@@ -19,6 +19,30 @@ export default function RecipesPage() {
   const [hasMore, setHasMore] = useState(true);
   const [filters, setFilters] = useState({ category: '', area: '', ingredient: '' });
   const [searchTerm, setSearchTerm] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark' || 
+                     (window.matchMedia('(prefers-color-scheme: dark)').matches && 
+                      html.getAttribute('data-theme') !== 'light');
+      setIsDarkMode(isDark);
+    };
+
+    checkDarkMode();
+
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', checkDarkMode);
+    
+    return () => {
+      observer.disconnect();
+      mediaQuery.removeEventListener('change', checkDarkMode);
+    };
+  }, []);
 
   const fetchInitialRecipes = async (category = '', area = '', ingredient = '', search = '') => {
     try {
@@ -40,7 +64,42 @@ export default function RecipesPage() {
       
       // Fetch based on search term first
       if (search) {
-        allMeals = await searchMealsByName(search);
+        // Check if search contains multiple ingredients (comma-separated)
+        const searchTerms = search.split(',').map(term => term.trim().toLowerCase()).filter(term => term.length > 0);
+        
+        if (searchTerms.length > 1) {
+          // Multiple ingredients - use AND logic
+          // Fetch meals for the first ingredient
+          const firstIngredientMeals = await getMealsByIngredient(searchTerms[0]);
+          
+          if (firstIngredientMeals && firstIngredientMeals.length > 0) {
+            // Fetch full details for all meals
+            const detailedMeals = await fetchDetailedMeals(firstIngredientMeals, 100);
+            
+            // Filter meals that contain ALL search terms
+            allMeals = detailedMeals.filter(meal => {
+              return searchTerms.every(term => {
+                // Check if meal name contains the term
+                if (meal.strMeal && meal.strMeal.toLowerCase().includes(term)) {
+                  return true;
+                }
+                // Check if any ingredient contains the term
+                for (let i = 1; i <= 20; i++) {
+                  const mealIngredient = meal[`strIngredient${i}`];
+                  if (mealIngredient && mealIngredient.toLowerCase().includes(term)) {
+                    return true;
+                  }
+                }
+                return false;
+              });
+            });
+          } else {
+            allMeals = [];
+          }
+        } else {
+          // Single search term - use regular name search
+          allMeals = await searchMealsByName(search);
+        }
       }
       // If category is selected, filter by category
       else if (category) {
@@ -144,27 +203,69 @@ export default function RecipesPage() {
   };
 
   useEffect(() => {
+    // Load initial recipes on mount only
     fetchInitialRecipes();
   }, []);
 
   const handleSearch = (term) => {
     setSearchTerm(term);
+    // Only fetch when explicitly triggered, not on every keystroke
     fetchInitialRecipes(filters.category, filters.area, filters.ingredient, term);
   };
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
-    // If all filters are cleared, also clear search and load fresh
-    if (!newFilters.category && !newFilters.area && !newFilters.ingredient) {
-      setSearchTerm('');
-      fetchInitialRecipes('', '', '', '');
-    } else {
-      fetchInitialRecipes(newFilters.category, newFilters.area, newFilters.ingredient, searchTerm);
-    }
+    // Only fetch when explicitly triggered (button click or Enter)
+    fetchInitialRecipes(newFilters.category, newFilters.area, newFilters.ingredient, searchTerm);
   };
 
   return (
-    <div style={{ backgroundColor: 'var(--bg-main)', minHeight: '100vh' }}>
+    <div style={{ backgroundColor: 'var(--bg-main)', minHeight: '100vh', position: 'relative' }}>
+      <style jsx>{`
+        @keyframes floatRotate {
+          0%, 100% {
+            transform: translateY(0px) rotate(-5deg);
+          }
+          50% {
+            transform: translateY(-15px) rotate(5deg);
+          }
+        }
+      `}</style>
+      {/* Coffee Doodle - Upper Right */}
+      <img
+        src={isDarkMode ? '/CoffeeDoddle_dark.svg' : '/CoffeeDoddle.svg'}
+        alt="Coffee decoration"
+        style={{
+          position: 'absolute',
+          top: '120px',
+          right: '20px',
+          width: '360px',
+          height: 'auto',
+          opacity: 0.4,
+          pointerEvents: 'none',
+          zIndex: 0,
+          animation: 'floatRotate 3s ease-in-out infinite'
+        }}
+      />
+      
+      {/* Ice Cream Doodle - Lower Left */}
+      <img
+        src={isDarkMode ? '/IceCreamDoodle_dark.svg' : '/IceCreamDoodle.svg'}
+        alt="Ice cream decoration"
+        style={{
+          position: 'absolute',
+          bottom: '520px',
+          left: '20px',
+          width: '360px',
+          height: 'auto',
+          opacity: 0.4,
+          pointerEvents: 'none',
+          zIndex: 0,
+          animation: 'floatRotate 3s ease-in-out infinite'
+        }}
+      />
+      
+
       <Navigation />
 
       {/* Page Header */}

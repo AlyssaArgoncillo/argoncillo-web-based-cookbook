@@ -9,33 +9,118 @@ export default function IngredientFinder() {
   const [ingredientResults, setIngredientResults] = useState([]);
   const [ingredientLoading, setIngredientLoading] = useState(false);
   const [ingredientError, setIngredientError] = useState('');
+  const [availableMeals, setAvailableMeals] = useState([]);
+  const [currentRecipe, setCurrentRecipe] = useState(null);
 
   const handleFindByIngredient = async () => {
     if (!ingredientQuery.trim()) {
-      setIngredientError('Please enter an ingredient to search.');
-      setIngredientResults([]);
+      setIngredientError('Please enter ingredients to search.');
+      setCurrentRecipe(null);
+      setAvailableMeals([]);
       return;
     }
     setIngredientError('');
     setIngredientLoading(true);
+    setCurrentRecipe(null);
     try {
-      const meals = await getMealsByIngredient(ingredientQuery.trim());
+      // Split by comma to support multiple ingredients
+      const ingredients = ingredientQuery.split(',').map(ing => ing.trim().toLowerCase()).filter(ing => ing.length > 0);
+      
+      if (ingredients.length === 0) {
+        setIngredientError('Please enter valid ingredients.');
+        setCurrentRecipe(null);
+        setAvailableMeals([]);
+        setIngredientLoading(false);
+        return;
+      }
+
+      // Fetch meals for the first ingredient
+      const firstIngredient = ingredients[0];
+      const meals = await getMealsByIngredient(firstIngredient);
+      
       if (!meals || meals.length === 0) {
-        setIngredientError('No recipes found for that ingredient.');
-        setIngredientResults([]);
+        setIngredientError('No recipes found for those ingredients.');
+        setCurrentRecipe(null);
+        setAvailableMeals([]);
+        setIngredientLoading(false);
+        return;
+      }
+
+      // If multiple ingredients, fetch full details and filter for meals containing ALL ingredients
+      if (ingredients.length > 1) {
+        const detailedMeals = await Promise.allSettled(
+          meals.map(meal => getMealById(meal.idMeal))
+        );
+        
+        const fullMeals = detailedMeals
+          .filter(result => result.status === 'fulfilled' && result.value)
+          .map(result => result.value);
+        
+        // Filter meals that contain ALL ingredients
+        const filteredMeals = fullMeals.filter(meal => {
+          // Check if meal contains all ingredients
+          return ingredients.every(ingredient => {
+            // Check all ingredient fields (strIngredient1 to strIngredient20)
+            for (let i = 1; i <= 20; i++) {
+              const mealIngredient = meal[`strIngredient${i}`];
+              if (mealIngredient && mealIngredient.toLowerCase().includes(ingredient)) {
+                return true;
+              }
+            }
+            return false;
+          });
+        });
+        
+        if (filteredMeals.length === 0) {
+          setIngredientError(`No recipes found containing all ingredients: ${ingredients.join(', ')}`);
+          setCurrentRecipe(null);
+          setAvailableMeals([]);
+        } else {
+          setAvailableMeals(filteredMeals);
+          // Show first random meal
+          const randomMeal = filteredMeals[Math.floor(Math.random() * filteredMeals.length)];
+          setCurrentRecipe(randomMeal);
+        }
       } else {
-        const first = meals[0];
+        // Single ingredient - just get one random meal
+        setAvailableMeals(meals);
+        const randomMeal = meals[Math.floor(Math.random() * meals.length)];
+        
         try {
-          const full = await getMealById(first.idMeal);
-          setIngredientResults([full || first]);
+          const full = await getMealById(randomMeal.idMeal);
+          setCurrentRecipe(full || randomMeal);
         } catch (err) {
-          setIngredientResults([first]);
+          setCurrentRecipe(randomMeal);
         }
       }
     } catch (err) {
       console.error('Error fetching ingredient recipes', err);
       setIngredientError('Something went wrong. Please try again.');
-      setIngredientResults([]);
+      setCurrentRecipe(null);
+      setAvailableMeals([]);
+    } finally {
+      setIngredientLoading(false);
+    }
+  };
+
+  const handleGenerateAgain = async () => {
+    if (availableMeals.length === 0) return;
+    
+    setIngredientLoading(true);
+    try {
+      // Get another random meal
+      const randomMeal = availableMeals[Math.floor(Math.random() * availableMeals.length)];
+      
+      // Fetch full details
+      try {
+        const full = await getMealById(randomMeal.idMeal);
+        setCurrentRecipe(full || randomMeal);
+      } catch (err) {
+        setCurrentRecipe(randomMeal);
+      }
+    } catch (err) {
+      console.error('Error fetching recipe', err);
+      setIngredientError('Could not load recipe. Please try again.');
     } finally {
       setIngredientLoading(false);
     }
@@ -87,6 +172,12 @@ export default function IngredientFinder() {
                 type="text"
                 value={ingredientQuery}
                 onChange={(e) => setIngredientQuery(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleFindByIngredient();
+                  }
+                }}
                 placeholder="e.g. chicken, tomato, cheese"
                 style={{
                   flex: '1 1 240px',
@@ -140,15 +231,16 @@ export default function IngredientFinder() {
             minHeight: '220px',
             border: '1px solid var(--badge-bg)',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            gap: '16px'
           }}>
             {ingredientLoading && <Loader />}
-            {!ingredientLoading && ingredientResults.length > 0 && (
-              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {ingredientResults.map((result, idx) => (
+            {!ingredientLoading && currentRecipe && (
+              <>
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div
-                    key={result.idMeal || idx}
                     style={{
                       display: 'grid',
                       gridTemplateColumns: 'minmax(96px, 120px) 1fr',
@@ -168,8 +260,8 @@ export default function IngredientFinder() {
                       boxShadow: '0 6px 12px rgba(0,0,0,0.12)'
                     }}>
                       <img
-                        src={result.strMealThumb}
-                        alt={result.strMeal}
+                        src={currentRecipe.strMealThumb}
+                        alt={currentRecipe.strMeal}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', minHeight: '110px' }}
                       />
                     </div>
@@ -179,17 +271,17 @@ export default function IngredientFinder() {
                         fontWeight: 700,
                         color: 'var(--text-primary)'
                       }}>
-                        {result.strMeal}
+                        {currentRecipe.strMeal}
                       </div>
                       <div style={{
                         fontSize: '13px',
                         color: 'var(--text-secondary)'
                       }}>
-                        {result.strArea || 'International'} • {result.strCategory || 'Recipe'}
+                        {currentRecipe.strArea || 'International'} • {currentRecipe.strCategory || 'Recipe'}
                       </div>
                       <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                         <a
-                          href={`/recipe/${result.idMeal}`}
+                          href={`/recipe/${currentRecipe.idMeal}`}
                           style={{
                             backgroundColor: 'var(--btn-primary)',
                             color: '#fff',
@@ -202,9 +294,9 @@ export default function IngredientFinder() {
                         >
                           View Recipe
                         </a>
-                        {result.strYoutube && (
+                        {currentRecipe.strYoutube && (
                           <a
-                            href={result.strYoutube}
+                            href={currentRecipe.strYoutube}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{
@@ -223,13 +315,35 @@ export default function IngredientFinder() {
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+                
+                {/* Generate Again Button */}
+                <button
+                  onClick={handleGenerateAgain}
+                  disabled={ingredientLoading}
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: 'var(--btn-primary)',
+                    color: '#fff',
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    opacity: ingredientLoading ? 0.8 : 1,
+                    transition: 'background-color 0.3s ease'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--btn-primary-hover)'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--btn-primary)'}
+                >
+                  🔄 Generate Again
+                </button>
+              </>
             )}
 
-            {!ingredientLoading && ingredientResults.length === 0 && !ingredientError && (
+            {!ingredientLoading && !currentRecipe && !ingredientError && (
               <p style={{ color: 'var(--text-secondary)', margin: 0, textAlign: 'center' }}>
-                😔 No recipes found in index.
+                🥣 Enter ingredient/s.
               </p>
             )}
           </div>
